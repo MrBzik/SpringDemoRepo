@@ -16,38 +16,19 @@ import java.net.http.HttpResponse;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 public class DemoApplication {
-
-	@JsonSerialize
-	public static class MyObject {
-
-		private final String name;
-		private final int age;
-
-		public MyObject(String name, int age){
-			this.name = name;
-			this.age = age;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public int getAge() {
-			return age;
-		}
-
-	}
+	
+	public static void main(String[] args) {
 
 
-	public static void main(String[] args) throws JsonProcessingException {
-		SpringApplication.run(DemoApplication.class, args);
-		DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-		System.out.println(format.format(new Date()));
+
+
     }
 
 

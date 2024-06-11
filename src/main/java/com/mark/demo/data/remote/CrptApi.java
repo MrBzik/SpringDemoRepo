@@ -1,18 +1,18 @@
-package com.mark.demo;
+package com.mark.demo.data.remote;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mark.demo.data.entities.Document;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Date;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class CrptApi {
+    private static CrptApi instance;
     private final TimeUnit timeUnit;
     private final int requestLimit;
     private Long requestsTimeStampLimiter = 0L;
@@ -33,7 +33,11 @@ public class CrptApi {
         if(requestLimit <= 0){
             throw new InstantiationException("requestLimit should be greater than 0");
         }
-        return new CrptApi(timeUnit, requestLimit);
+        if(instance == null){
+            instance = new CrptApi(timeUnit, requestLimit);
+        }
+
+        return instance;
     }
 
 
@@ -43,12 +47,14 @@ public class CrptApi {
 
         try {
             String documentJson = objectMapper.writeValueAsString(document);
+            System.out.println("sending: " + documentJson);
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://ismp.crpt.ru/api/v3/lk/documents/create"))
                     .header("Authorization", accessToken)
                     .POST(HttpRequest.BodyPublishers.ofString(documentJson))
                     .build();
-           httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+           HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+           System.out.println("response: " + response);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         } catch (IOException | InterruptedException e){
@@ -70,49 +76,4 @@ public class CrptApi {
         return true;
     }
 
-
-    public record Document(
-        ParticipantInn description,
-        String doc_id,
-        String doc_status,
-        OPERATION_TYPE type,
-        Boolean importRequest,
-        String owner_inn,
-        String participant_inn,
-        String producer_inn,
-        Date production_date,
-        String production_type,
-        List<Product> products,
-        Date reg_date,
-        String reg_number
-    ){
-
-        enum OPERATION_TYPE {
-            LP_INTRODUCE_GOODS,
-            LP_CONTRACT_COMISSIONING,
-            LP_GOODS_IMPORT,
-            LP_FTS_INTRODUCE,
-            CROSSBORDER,
-            LP_SHIP_GOODS_CROSSBORDER,
-            EAS_CROSSBORDER,
-            LP_ACCEPT_GOODS
-        }
-
-        public record Product(
-            String certificate_document,
-            Date certificate_document_date,
-            String certificate_document_number,
-            String owner_inn,
-            String producer_inn,
-            Date production_date,
-            String tnved_code,
-            String uit_code,
-            String uitu_code
-        ) {}
-
-        public record ParticipantInn(
-                String participantInn
-        ){}
-
-    }
 }
