@@ -41,7 +41,7 @@ public class CrptApi {
     }
 
 
-    public synchronized void sendDocument(Document document, String accessToken){
+    public void sendDocument(Document document, String accessToken){
 
         if(!assertLimitNotReached()) return;
 
@@ -63,7 +63,7 @@ public class CrptApi {
     }
 
 
-    private Boolean assertLimitNotReached(){
+    private synchronized Boolean assertLimitNotReached(){
         if(requestsTimeStampLimiter == 0L || requestsTimeStampLimiter > System.currentTimeMillis()){
             requestsTimeStampLimiter = System.currentTimeMillis() + timeUnit.toMillis(1);
             requestsMade = 0;
