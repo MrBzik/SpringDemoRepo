@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class CrptApi {
@@ -53,18 +54,23 @@ public class CrptApi {
                     .header("Authorization", accessToken)
                     .POST(HttpRequest.BodyPublishers.ofString(documentJson))
                     .build();
-           HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-           System.out.println("response: " + response);
+            httpClient
+                    .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenAcceptAsync( body -> {
+                        System.out.println(body.body());
+                    });
+
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
-        } catch (IOException | InterruptedException e){
-            System.out.println(e.getLocalizedMessage());
         }
     }
 
 
     private synchronized Boolean assertLimitNotReached(){
-        if(requestsTimeStampLimiter == 0L || requestsTimeStampLimiter > System.currentTimeMillis()){
+
+        System.out.println(requestsMade);
+
+        if(requestsTimeStampLimiter == 0L || requestsTimeStampLimiter < System.currentTimeMillis()){
             requestsTimeStampLimiter = System.currentTimeMillis() + timeUnit.toMillis(1);
             requestsMade = 0;
         }
